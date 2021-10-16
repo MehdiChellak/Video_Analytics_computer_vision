@@ -40,7 +40,7 @@ while(cap.isOpened()):
     gray = cv2.resize(gray, (round(width), round(height)), interpolation=cv2.INTER_AREA)    
     bigFrame = gray + bigFrame 
     numberFrame +=1
-    if numberFrame == 100:
+    if numberFrame == 50:
         break
   else: 
     break
