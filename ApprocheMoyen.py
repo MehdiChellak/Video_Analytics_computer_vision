@@ -66,8 +66,11 @@ while (cap.isOpened()):
         
         thresh = simpleApproche(gray,moyenFrame)
         
-        cv2.imshow('Frame 1',gray)
-        cv2.imshow('Frame 2',thresh)
+        # Stack all three frames and show the image
+        stacked = np.hstack((gray,gray))
+        #cv2.imshow('All three',cv2.resize(stacked,None,fx=0.65,fy=0.65))
+        cv2.imshow("frame 1", gray)
+        cv2.imshow("frame 2", thresh)
                 
         if cv2.waitKey(25) & 0xFF == ord('q'):
             break

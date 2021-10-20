@@ -52,7 +52,6 @@ while(cap.isOpened() and n > 0):
 
 medianImage = np.median(images,axis=2)
 medianImage = medianImage.astype(int)
-cv2.imshow("image Medain",medianImage)
 
 # When everything done, release the video capture object
 cap.release()
