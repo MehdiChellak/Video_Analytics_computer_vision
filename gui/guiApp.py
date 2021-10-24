@@ -17,6 +17,7 @@ import cv2
 import numpy as np
 width, height = 480, 480
 import sys
+from scipy import ndimage
 
 NBF=50
 
@@ -72,6 +73,8 @@ class Ui_Form(object):
         self.median.clicked.connect(lambda: self.median_app())
         self.moving_average.clicked.connect(lambda: self.moving_average_app())
         self.average.clicked.connect(lambda: self.average_app())
+        self.filter.clicked.connect(lambda: self.filtre_pass_haute())
+        self.pushButton_3.clicked.connect(lambda: self.filtre_pass_haute_sobel())
         self.bg.clicked.connect(lambda: self.select_bg_handler())
 
     def retranslateUi(self, Form):
@@ -85,7 +88,7 @@ class Ui_Form(object):
         self.filter.setText(_translate("Form", "Filter Pass Haute"))
         self.select_video.setText(_translate("Form", "Select Video"))
         self.saveVideo.setText(_translate("Form", "Save Video"))
-        self.pushButton_3.setText(_translate("Form", "Open Camera"))
+        self.pushButton_3.setText(_translate("Form", "Sobel Filtre"))
         self.label.setText(_translate("Form", "5 Approches video analysis"))
 
     
@@ -226,10 +229,7 @@ class Ui_Form(object):
           ret, frame = cap.read()
           if ret == True:
         
-            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-            gray = cv2.GaussianBlur(gray, (21, 21), 0)
-            height, width = 480, 480
-            gray = cv2.resize(gray, (round(width), round(height)), interpolation=cv2.INTER_AREA)    
+            gray = self.convertToGray(frame)    
             bigFrame = gray + bigFrame 
             numberFrame +=1
             if numberFrame == NBF:
@@ -241,7 +241,62 @@ class Ui_Form(object):
         moyenFrame = bigFrame.astype(int)
         cap.release()
         self.showMeSome(moyenFrame,"average")
+    
+    def filtre_pass_haute(self):
+        cap = self.readVideo()
+        while(cap.isOpened()):
+            ret, frame = cap.read()
+            if ret == True:
+                gray = self.convertToGray(frame) 
+                edges = cv2.Canny(gray, 100, 200)
+                
+                cv2.imshow('original',gray)
+                cv2.imshow('Canny filtre',edges)
+                if cv2.waitKey(25) & 0xFF == ord('q'):
+                    break
+            else:
+                break
+        cap.release()
+        cv2.destroyAllWindows()
 
+    def filtre_pass_haute_sobel(self):
+        cap = self.readVideo()
+        while(cap.isOpened()):
+            ret, frame = cap.read()
+            if ret == True:
+                gray = self.convertToGray(frame) 
+                
+                edges = self.SP(gray)
+                
+                cv2.imshow('original',gray)
+                cv2.imshow('Sobel filtre',edges)
+                if cv2.waitKey(25) & 0xFF == ord('q'):
+                    break
+            else:
+                break
+        cap.release()
+        cv2.destroyAllWindows()
+    
+    def SP(self,img):
+            c = 2 # filtre sobel
+    
+            hs1 = np.array(
+                [
+                    [1, c, 1],
+                    [0, 0, 0],
+                    [-1, -c, -1]
+                ])
+            hs2 = np.array(
+                [
+                    [1, 0, 1],
+                    [c, 0, c],
+                    [1, 0, 1]
+                ])
+            abs1 = np.abs(ndimage.convolve(img, hs1))
+            abs2 = np.abs(ndimage.convolve(img, hs2))
+            image = abs1 + abs2
+            return image
+    
 if __name__ == "__main__":
     import sys
     app = QtWidgets.QApplication(sys.argv)
